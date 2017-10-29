@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style type="text/css">
+        #ktav {
+            border: solid 1px black;
+            margin-left: 500px;
+        }
+
+        ;
+    </style>
+
+
+    <title></title>
+</head>
+
+<body>
+    <canvas width="500" height="500" id='ktav'></canvas>
+    <script type="text/javascript">
+        const canvas = document.getElementById("ktav");
+        const drawtools = canvas.getContext("2d");
+        const colorArry = ["red", "green", "blue", "orange"]
+        const rand = function(num) {
+            return Math.floor(Math.random() * num);
+        };
+
+
+        const gameData = {
+            hero: {
+                x: 470,
+                y: 470,
+                xDelta: 5,
+                yDelta: 5,
+                width: 10,
+                height: 30
+            },
+            badGuys: [],
+            isKilled: false
+        };
+        const badGuys = function(n) {
+            if (n <= 0) return;
+            gameData.badGuys.push({
+                x: 100,
+                y: 10,
+                width: 30,
+                height: 30,
+                xDelta: rand(3) + 1,
+                yDelta: rand(3) + 1,
+                color: colorArry[rand(3)]
+            })
+            badGuys(n - 1);
+        }
+        badGuys(5)
+        const drawGuys = function() {
+            drawtools.clearRect(0, 0, canvas.width, canvas.height);
+            const colorFill = function(n) {
+                if (n < 0) {
+                    return
+                };
+                drawtools.fillStyle = gameData.badGuys[n].color;
+                drawtools.fillRect(gameData.badGuys[n].x, gameData.badGuys[n].y, gameData.badGuys[n].width, gameData.badGuys[n].height);
+                colorFill(n - 1);
+            };
+            colorFill(gameData.badGuys.length - 1);
+
+
+            drawtools.beginPath();
+            drawtools.arc(gameData.hero.x, gameData.hero.y, 10, 0, 2 * Math.PI, false);
+            drawtools.fillStyle = 'black';
+            drawtools.fill();
+            drawtools.lineWidth = 2;
+            drawtools.strokeStyle = '#003300';
+            drawtools.stroke();
+        }
+
+        const foreach = function(arr, f) {
+            const rec = function(n) {
+                if (n <= 0) {
+                    return;
+                }
+                f(arr[n - 1])
+                rec(n - 1);
+            }
+            rec(arr.length)
+        }
+        const leftKey = 37;
+        const upKey = 38;
+        const rightKey = 39;
+        const downKey = 40;
+
+        const RectCircleIntersection = function(rectX, rectY, rectW, rectH, circleX, circleY, circleR) {
+            const deltaX = circleX - Math.max(rectX, Math.min(circleX, rectX + rectW));
+            const deltaY = circleY - Math.max(rectY, Math.min(circleY, rectY + rectH));
+            return (deltaX * deltaX + deltaY * deltaY) < (circleR * circleR);
+        };
+        const updateData = function() {
+            const hero = gameData.hero;
+            foreach(gameData.badGuys, function(badGuy) {
+                badGuy.x = badGuy.x + badGuy.xDelta;
+                badGuy.y = badGuy.y + badGuy.yDelta;
+                if (badGuy.x >= canvas.width - 30 || badGuy.x < 0) {
+                    badGuy.xDelta = -badGuy.xDelta;
+                }
+                if (badGuy.y >= canvas.height - 30 || badGuy.y < 0) {
+                    badGuy.yDelta = -badGuy.yDelta;
+                };
+              if(RectCircleIntersection(badGuy.x, badGuy.y, badGuy.width, badGuy.height, hero.x, hero.y, 5)){
+                gameData.isKilled = true;
+
+              }
+
+
+            })
+
+
+        };
+        document.addEventListener('keydown', function(event) {
+        if(event.keyCode === upKey && gameData.hero.y > gameData.hero.width) {
+      gameData.hero.y -= gameData.hero.yDelta;
+    }
+    if(event.keyCode === downKey && gameData.hero.y < canvas.height - gameData.hero.width) {
+      gameData.hero.y += gameData.hero.yDelta;
+    }
+    if(event.keyCode === rightKey && gameData.hero.x < canvas.width - gameData.hero.width) {
+      gameData.hero.x += gameData.hero.xDelta;
+    }
+    if(event.keyCode === leftKey && gameData.hero.x > gameData.hero.width) {
+      gameData.hero.x -= gameData.hero.xDelta;
+    }
+    event.preventDefault()
+        }, false);
+
+        const loop = function() {
+            drawGuys();
+            updateData();
+            if (!gameData.isKilled) {
+                requestAnimationFrame(loop);
+            } else {
+                alert("Game over");
+				location.reload();
+            }
+        }
+        loop();
+    </script>
+</body>
+
+</html>

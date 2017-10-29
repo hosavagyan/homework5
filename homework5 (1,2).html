@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+	#cvs{
+		border: solid 1px black;
+		  margin-left: 500px;
+	}
+
+</style>
+
+	<title>My fifth homework</title>
+
+</head>
+
+<body>
+<canvas width="300", height="300", id="cvs"></canvas>
+<script> 
+const canvas = document.getElementById("cvs");
+const rand = function(num) {
+	return Math.floor(Math.random() * num) + 1;
+};
+
+const ctx = canvas.getContext("2d");
+const colorArray = ["red","green","orange"]
+const createPoints = function(count, canvasWidth, canvasHeight) {
+	
+	const arr=[]
+
+	const recursion = function(n){
+	 	if (n<=0) {
+	 		return;
+	 	}
+	 	arr.push({
+			    x:Math.abs(rand(canvasWidth-30)),
+			    y:Math.abs(rand(canvasHeight-30)),
+			    width: 30,
+	            height: 30,
+	            xDelta: 1,	
+	            yDelta: 1,
+	            color: colorArray[rand(3)-1]
+		}) 
+	 	recursion(n-1);
+	 }
+	 recursion(count);
+	return arr;
+};
+
+//2)
+
+
+const boxarr = createPoints(12, canvas.width, canvas.height);
+const foreach = function(arr, f){
+    const rec = function(n){
+    	if (n<=0) {
+    		return;
+    	}
+    	f(arr[n-1])
+    	rec(n-1);
+    }
+    rec(arr.length)
+}
+
+
+
+const drawbox = function(){
+	ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+	foreach(boxarr,function(box){
+		ctx.fillStyle = box.color;
+		ctx.fillRect(box.x, box.y, box.width, box.height)
+	})
+}
+const updateData = function(){
+	foreach(boxarr, function(box){
+	if (box.x+ box.width > canvas.width || box.x < 0) {
+		box.xDelta = -box.xDelta;
+	}
+	if (box.y + box.height > canvas.height || box.y < 0 ) {
+		box.yDelta = -box.yDelta;
+	}
+	box.x += box.xDelta;
+	box.y += box.yDelta;
+	})
+}
+const loop = function(){
+	drawbox();
+	updateData();
+	requestAnimationFrame(loop);
+}
+loop();
+
+</script>
+
+</body>
+</html>
